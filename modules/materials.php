@@ -19,8 +19,8 @@ class MaterialsModule
         $filters_search = $data['filters'];
 
         /** Query */
-            $sql_categories = 'SELECT categories.name FROM categories WHERE categories.code = materials.code';
-            $sql = 'SELECT *, ('.$sql_categories.') as categories_name FROM materials ';
+            $sql_categories = 'SELECT categories.name FROM categories WHERE categories.code = materials.category_code';
+            $sql = 'SELECT materials.*, ('.$sql_categories.') as category_name FROM materials ';
             $sql_prep = [];
             $sql_where = '';
 

@@ -10,7 +10,8 @@ $url = 'http://localhost/materials_management/';
     <link rel="stylesheet" href="<?php echo $url.'/main.css'?>">
 
     <script>
-        _url = 'modules/materials-locations.php';
+        _url = 'modules/materials_locations.php';
+        _module = 'materials_locations';
         window.onload = function() {
             col_display = [
                 'material_code',
@@ -33,7 +34,7 @@ $url = 'http://localhost/materials_management/';
         <a href="locations.php">Locations</a>
         <a href="materials.php">Materials</a>
         <a href="categories.php">Categories</a>
-        <a href="materials-locations.php" class="active">Materials-Locations</a>
+        <a href="materials_locations.php" class="active">Materials-Locations</a>
     </div>
 </div>
 
@@ -59,6 +60,7 @@ $url = 'http://localhost/materials_management/';
             </div>
             <div class="box">
                 <div style="float: right;">
+                    <button type="button" style="margin-right: 10px;" onclick="generateReport()">Generate Report</button>
                     <button type="button" style="margin-right: 10px;" onclick="addBtn()">Add</button>
                     <form onsubmit="event.preventDefault()" style="display:inline-block; margin: 0;">
                         Search: <input type="text" name="search" id="search" placeholder="Search" autocomplete="off">

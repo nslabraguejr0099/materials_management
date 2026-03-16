@@ -405,6 +405,13 @@ async function loadTbl ( )
                             td.innerHTML = dt[_col] == 1 ? 'Active' : 'Inactive';
                         if ( _col == 'availability' )
                             td.innerHTML = dt[_col] == 1 ? 'Available' : 'Unvailable';
+                        if ( _col == 'category_code' ) {
+                            let _str = '';
+                            _str += dt[_col];
+                            if ( dt['category_name'] )
+                                _str += ' - '+dt['category_name'];
+                            td.innerHTML = _str;
+                        }
 
                         tr.appendChild(td);
                     });
@@ -584,7 +591,7 @@ async function deleteRecord( _data )
     if ( !appStat ) {
         return;
     }
-    
+
     if( _data == null || _data === '' ){
         return;
     }
@@ -620,4 +627,67 @@ async function deleteRecord( _data )
             document.getElementById('grayScreen').style.display = 'none';
         }
     });
+}
+
+
+var genRepStat = true;
+async function generateReport()
+{
+    if ( !appStat ) {
+        return;
+    }
+
+    if(genRepStat == false){
+        console.log("Please wait . . .");
+        return;
+    }
+    genRepStat = false;
+
+    // Create Form
+    var tmpForm = document.createElement("form");
+    var tmpElement;
+
+    // Form Properties
+    tmpForm.method = "POST";
+    tmpForm.action = 'report.php';
+    tmpForm.target = "_blank";
+
+    // mode
+    tmpElement = document.createElement("input");
+    tmpElement.value = 'report';
+    tmpElement.name = 'mode';
+    tmpForm.appendChild(tmpElement);
+
+    // module
+    tmpElement = document.createElement("input");
+    tmpElement.value = _module;
+    tmpElement.name = 'module';
+    tmpForm.appendChild(tmpElement);
+
+    // search value
+    tmpElement = document.createElement("input");
+    tmpElement.value = document.getElementById('search').value;
+    tmpElement.name = 'search';
+    tmpForm.appendChild(tmpElement);
+
+    // filters value
+    let filterBox = document.getElementById('filterBox');
+    let filters = filterBox.querySelectorAll('.filter');
+    filters.forEach(_elem => {
+        // let filter_name = _elem.id.toLowerCase().replace('filter_', '');
+
+        if ( _elem.value ) {
+            tmpElement = document.createElement("input");
+            tmpElement.value = _elem.value;
+            tmpElement.name = _elem.id; // filter_name;
+            tmpForm.appendChild(tmpElement);
+        }
+    });
+
+    document.body.appendChild(tmpForm);
+
+    tmpForm.submit();
+    tmpForm.remove();
+
+    genRepStat = true;
 }

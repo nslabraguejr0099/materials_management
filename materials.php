@@ -11,6 +11,7 @@ $url = 'http://localhost/materials_management/';
 
     <script>
         _url = 'modules/materials.php';
+        _module = 'materials';
         window.onload = function() {
             col_display = ['code', 'name', 'category_code', 'status'];
             loadTbl();
@@ -27,7 +28,7 @@ $url = 'http://localhost/materials_management/';
         <a href="locations.php">Locations</a>
         <a href="materials.php" class="active">Materials</a>
         <a href="categories.php">Categories</a>
-        <a href="materials-locations.php">Materials-Locations</a>
+        <a href="materials_locations.php">Materials-Locations</a>
     </div>
 </div>
 

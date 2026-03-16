@@ -312,9 +312,111 @@ class MatLocModule
             throw new Exception($e);
         }
     }
-}
 
-header('Content-Type: application/json');
+    public function generate_report ( $data )
+    {
+        $data['filters'] = isset($data['filters']) && is_array($data['filters']) ? $data['filters'] : [];
+        $search = $data['search'];
+        $filters_search = $data['filters'];
+
+        /** Query */
+            $sql = 'SELECT * FROM materials_locations ';
+            $sql_prep = [];
+            $sql_where = '';
+
+            //  search where clause
+            $col_search = ['material_code', 'location_code', 'price'];
+            if ( !is_null($search) && $search != '' ) {
+                $sql_col_search = '';
+                foreach ( $col_search as $item ) {
+                    $sql_col_search .= '`'.$item.'` LIKE ? OR ';
+                    $sql_prep[] = '%'.$search.'%';
+                }
+                $sql_col_search = substr($sql_col_search, 0, -3);
+
+                $sql .= "WHERE (".$sql_col_search.") ";
+            }
+
+            //  where clause for filters
+            foreach ( $filters_search as $k => $filter ) {
+                if ( is_null($filter) || $filter == '' ) {
+                    continue;
+                }
+                else {
+                    $sql_where .= $k." = ? AND ";
+                    $sql_prep[] = $filter;
+                }
+            }
+            if ( !empty($sql_where) ) {
+                $sql_where = substr($sql_where, 0, -4);
+
+                if ( is_null($search) || $search == '' )
+                    $sql_where ='WHERE '.$sql_where;
+
+                $sql .= $sql_where;
+            }
+
+            //  query
+            $db = new Database;
+            $db_conn = $db->db_connect();
+            $tbl_load = $db_conn->prepare($sql);
+            if ( empty($sql_prep) ) {
+                $tbl_load->execute();
+            } else {
+                $tbl_load->execute($sql_prep);
+            }
+
+            $tbl_head = [
+                'Material Code',
+                'Location Code',
+                'Price',
+                'Availability',
+                'Status',
+            ];
+            $tbl_data = [];
+            while ( $row = $tbl_load->fetch(PDO::FETCH_ASSOC) ) {
+                $tbl_data[] = [
+                    $row['material_code'],
+                    $row['location_code'],
+                    $row['price'],
+                    $row['availability'],
+                    $row['status']
+                ];
+            }
+        /** */
+
+        /** Filters */
+            $filters_display = [];
+            $filters_desc = [
+                'status' => 'Status',
+                'availability' => 'Availability',
+                'location_code' => 'Location'
+            ];
+            if ( !is_null($search) && $search != '' )
+                $filters_display[] = [
+                    'title' => 'Search',
+                    'text'  => $search
+                ];
+            foreach ( $filters_search as $key => $item ) {
+                if ( $key == 'availability')
+                    $item = $item == 1 ? 'Available' : 'Unavailable';
+                if ( $key == 'status' )
+                    $item = $item == 1 ? 'Active' : 'Inactive';
+                $filters_display[] = [
+                    'title' => $filters_desc[$key],
+                    'text'  => $item
+                ];
+            }
+        /** */
+
+        return [
+            'data' => $tbl_data,
+            'table_head' => $tbl_head,
+            'title' => 'MATERIALS-LOCATIONS REFERENCE',
+            'filters' => $filters_display
+        ];
+    }
+}
 
 $request_method = $_SERVER['REQUEST_METHOD'];
 $request_data = null;
@@ -335,6 +437,7 @@ $_module = new MatLocModule;
 
 if ( $request_method == 'POST' && $mode == 'tbl_load' )
 {
+    header('Content-Type: application/json');
     echo json_encode($_module->index($request_data));
 }
 
@@ -346,10 +449,12 @@ if ( ($request_method == 'POST' || $request_method == 'PUT') && $mode == 'save' 
     } elseif ( $request_method == 'PUT' ) {
         $_mode = 'edit';
     }
+    header('Content-Type: application/json');
     echo json_encode($_module->save($request_data, $_mode));
 }
 
 if ( $request_method == 'DELETE' && $mode == 'delete' )
 {
+    header('Content-Type: application/json');
     echo json_encode($_module->delete($request_data));
 }
